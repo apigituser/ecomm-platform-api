@@ -14,7 +14,7 @@ class Product(models.Model):
     description = models.CharField(max_length=1000)
     brand = models.CharField(max_length=100)
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    available_units = models.IntegerField()
+    stock = models.IntegerField()
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     rating = models.DecimalField(max_digits=2, decimal_places=1, validators=[MinValueValidator(0.0),MaxValueValidator(5.0)], default=0.0)
     
@@ -24,15 +24,15 @@ class Product(models.Model):
 class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    ordered_units = models.IntegerField()
+    units = models.IntegerField()
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
     created_at = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=10) # STATUS (Pending, Delayed, Delivered, Cancelled)
+    status = models.CharField(max_length=10, default="Pending") # STATUS (Pending, Delayed, Delivered, Cancelled)
 
     def __str__(self):
-        return str(self.user) + "_" + str(self.product)
+        return str(self.user)
 
-class UserReview(models.Model):
+class Review(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     rating = models.SmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
@@ -43,10 +43,7 @@ class UserReview(models.Model):
     def __str__(self):
         return str(self.user);
 
-class OrderHistory(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    order = models.ForeignKey(Order, on_delete=models.CASCADE)
-
 class Cart(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.SmallIntegerField()
