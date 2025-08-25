@@ -1,7 +1,9 @@
 from django.http import JsonResponse
+from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from django.contrib.auth.models import User
+from .serializers import ProductSerializer
 from .models import Product
 
 ## Admin Only
@@ -26,9 +28,7 @@ class UserRegistration(APIView):
             return JsonResponse({"status": "user not registered"}, status=400)
         return JsonResponse({"status": "username, password and email are required"}, status=400)
 
-class ListProducts(APIView):
+class ListProducts(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        response = list(Product.objects.values())
-        return JsonResponse({"data": response})
+    serializer_class = ProductSerializer
+    queryset = Product.objects.all()
