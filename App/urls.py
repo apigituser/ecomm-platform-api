@@ -8,4 +8,5 @@ urlpatterns = [
     path('login/', TokenObtainPairView.as_view()),
     path('products/all/', views.ListProducts.as_view()),
     path('products/<int:id>', views.ListSingleProduct),
+    path('products/create/', views.CreateProduct),
 ]

@@ -1,16 +1,32 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Product
+from .models import Product, Category
+
+class CategorySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Category
+        fields = ['id','name','count']
 
 class ProductSerializer(serializers.ModelSerializer):
-    category = serializers.CharField(source='category.name', read_only=True)
-    available_units = serializers.IntegerField(source='stock', read_only=True)
     price = serializers.FloatField()
     rating = serializers.FloatField()
+    
+    category = CategorySerializer(read_only=True)
+    category_id = serializers.IntegerField(source="category.id", write_only=True)
 
     class Meta:
         model = Product
-        fields = ['id','name','description','category','brand','price','rating','available_units']
+        fields = ['id','name','description','category','category_id','brand','price','rating','stock']
+
+    def create(self, validated_data):
+        category_id = validated_data.pop('category').get('id')
+        item = Category.objects.get(id=category_id)
+        item.count += 1
+        item.save()
+        validated_data['category'] = item
+        product = Product.objects.create(**validated_data)
+        return product
 
 class UserSerializer(serializers.ModelSerializer):
 

@@ -9,6 +9,15 @@ from .models import Product
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework import status
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def CreateProduct(request):
+    product = ProductSerializer(data=request.data)
+    validity = product.is_valid()
+    if validity:
+        product.save()
+        return Response({'message': 'success'})
+    return Response({'valid': validity, 'retrieved_data': product.data, 'validated_data': product.validated_data, 'errors': product.errors})
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def ListSingleProduct(request, id):
