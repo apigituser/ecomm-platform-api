@@ -1,8 +1,10 @@
 from django.http import JsonResponse
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from django.contrib.auth.models import User
+from .models import Product
 
+## Admin Only
 class ListUsers(APIView):
     permission_classes = [IsAdminUser]
 
@@ -23,3 +25,10 @@ class UserRegistration(APIView):
                 return JsonResponse({"status": "registeration successful"})
             return JsonResponse({"status": "user not registered"}, status=400)
         return JsonResponse({"status": "username, password and email are required"}, status=400)
+
+class ListProducts(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        response = list(Product.objects.values())
+        return JsonResponse({"data": response})
