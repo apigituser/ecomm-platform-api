@@ -2,37 +2,28 @@ from django.http import JsonResponse
 from rest_framework import generics
 from rest_framework.views import APIView, csrf_exempt
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from rest_framework.response import Response
 from django.contrib.auth.models import User
-from .serializers import ProductSerializer
+from .serializers import ProductSerializer, UserSerializer
 from .models import Product
 from rest_framework.decorators import api_view, permission_classes
-
-@csrf_exempt
-def product_list_create(request):
-    if request.method == 'GET':
-        return ListProducts(request)
-    elif request.method == 'POST':
-        return CreateProducts(request)
+from rest_framework import status
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def ListProducts(request):
-    products = Product.objects.select_related('category')
-    serializer = ProductSerializer(products, many=True)
-    return JsonResponse({"products": serializer.data})
+def ListSingleProduct(request, id):
+    try:
+        queryset = Product.objects.select_related('category').get(id=id)
+        serialized = ProductSerializer(queryset)
+        return Response(serialized.data)
+    except Product.DoesNotExist:
+        return Response({'message': 'product not found'}, status=status.HTTP_404_NOT_FOUND)
 
-@api_view(['POST'])
-@permission_classes([IsAdminUser, IsAuthenticated])
-def CreateProducts(request):
-    return 
-
-## Admin Only
-class ListUsers(APIView):
-    permission_classes = [IsAdminUser]
-
-    def get(self, request):
-        response = list(User.objects.values())
-        return JsonResponse({"users": response})
+# LIST ALL PRODUCTS
+class ListProducts(generics.ListAPIView):
+    serializer_class = ProductSerializer
+    permission_classes = [IsAuthenticated]
+    queryset = Product.objects.all()
 
 class UserRegistration(APIView):
 
@@ -48,3 +39,8 @@ class UserRegistration(APIView):
             return JsonResponse({"status": "user not registered"}, status=400)
         return JsonResponse({"status": "username, password and email are required"}, status=400)
 
+### ADMIN SECTION ###
+class ListUsers(generics.ListAPIView):
+    permission_classes = [IsAdminUser, IsAuthenticated]
+    serializer_class = UserSerializer
+    queryset = User.objects.all()
