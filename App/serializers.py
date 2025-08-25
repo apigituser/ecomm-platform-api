@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
 from .models import Product, Category
 
@@ -21,7 +22,7 @@ class ProductSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         category_id = validated_data.pop('category').get('id')
-        item = Category.objects.get(id=category_id)
+        item = get_object_or_404(Category, id=category_id)
         item.count += 1
         item.save()
         validated_data['category'] = item
