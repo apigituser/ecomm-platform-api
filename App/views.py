@@ -10,6 +10,7 @@ from .models import Product, Cart
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework import status
 
+
 """ CART SECTION """
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -18,6 +19,7 @@ def ListCartItems(request):
     items = Cart.objects.filter(user=user)
     serialized_items = CartSerializer(items, many=True)
     return Response(serialized_items.data)
+
 
 """ PRODUCT SECTION """
 class ListProducts(generics.ListAPIView):
