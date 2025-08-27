@@ -9,6 +9,19 @@ from .models import Product
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework import status
 
+# DELETE A PRODUCT
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def DeleteProduct(request, id):
+    try:
+        product = Product.objects.get(id=id)
+        deleted_product = Product.delete(product)
+        return Response({'message': 'product(id:{}) deleted'.format(id)})
+    except Product.DoesNotExist:
+        return Response({'message': 'product not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'message': str(e)})
+
 # UPDATE A PRODUCT
 '''
 STEPS TO UPDATE THE PRODUCT
@@ -19,7 +32,7 @@ Check if the serialized product is valid:
     if valid -> save the product
     else -> return an error response
 '''
-@api_view(['PATCH','PUT'])
+@api_view(['PATCH'])
 @permission_classes([IsAuthenticated, IsAdminUser])
 def UpdateProduct(request, id):
     try:
@@ -28,6 +41,7 @@ def UpdateProduct(request, id):
         if serialized_product.is_valid():
             updated_product = serialized_product.save()
             return Response(serialized_product.data)
+        return Response(serialized_product.errors)
     except Product.DoesNotExist:
         return Response({'message': 'product not found'}, status=status.HTTP_404_NOT_FOUND)
 
