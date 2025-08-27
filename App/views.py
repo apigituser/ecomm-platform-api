@@ -1,4 +1,5 @@
 from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
 from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
@@ -92,3 +93,11 @@ class ListUsers(generics.ListAPIView):
     permission_classes = [IsAdminUser, IsAuthenticated]
     serializer_class = UserSerializer
     queryset = User.objects.all()
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def DeleteUser(request):
+    username = request.POST.get('username')
+    user = get_object_or_404(User, username=username)
+    User.delete(user)
+    return Response({'message': f'user <{user.username}> deleted'})
