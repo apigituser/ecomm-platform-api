@@ -13,12 +13,12 @@ class ProductSerializer(serializers.ModelSerializer):
     price = serializers.FloatField()
     rating = serializers.FloatField()
     
-    category = CategorySerializer(read_only=True)
+    category_name = serializers.CharField(source="category.name", read_only=True)
     category_id = serializers.IntegerField(source="category.id", write_only=True)
 
     class Meta:
         model = Product
-        fields = ['id','name','description','category','category_id','brand','price','rating','stock']
+        fields = ['id','name','description','category_id','category_name','brand','price','rating','stock']
 
     def create(self, validated_data):
         category_id = validated_data.pop('category').get('id')

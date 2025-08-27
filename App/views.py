@@ -1,6 +1,6 @@
 from django.http import JsonResponse
 from rest_framework import generics
-from rest_framework.views import APIView, csrf_exempt
+from rest_framework.views import APIView
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from django.contrib.auth.models import User
@@ -9,7 +9,29 @@ from .models import Product
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework import status
 
+# UPDATE A PRODUCT
+'''
+STEPS TO UPDATE THE PRODUCT
+Fetch the product with the requested id
+Serialize the received the product using the ProductSerializer
+    :parameters -> the product object received, date in the request, partial=True (partial data allowed)
+Check if the serialized product is valid:
+    if valid -> save the product
+    else -> return an error response
+'''
+@api_view(['PATCH','PUT'])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def UpdateProduct(request, id):
+    try:
+        product = Product.objects.get(id=id)
+        serialized_product = ProductSerializer(product, data=request.data, partial=True)
+        if serialized_product.is_valid():
+            updated_product = serialized_product.save()
+            return Response(serialized_product.data)
+    except Product.DoesNotExist:
+        return Response({'message': 'product not found'}, status=status.HTTP_404_NOT_FOUND)
 
+# CREATE A PRODUCT
 @api_view(['POST'])
 @permission_classes([IsAuthenticated, IsAdminUser])
 def CreateProduct(request):
@@ -20,6 +42,7 @@ def CreateProduct(request):
         return Response({'message': 'success'})
     return Response({'valid': validity, 'retrieved_data': product.data, 'validated_data': product.validated_data, 'errors': product.errors})
 
+# LIST SINGLE PRODUCT
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def ListSingleProduct(request, id):
