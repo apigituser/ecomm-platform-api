@@ -30,7 +30,7 @@ class Order(models.Model):
     status = models.CharField(max_length=10, default="Pending") # STATUS (Pending, Delayed, Delivered, Cancelled)
 
     def __str__(self):
-        return str(self.user)
+        return self.user.username
 
 class Review(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -41,9 +41,12 @@ class Review(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return str(self.user);
+        return self.user.username
 
 class Cart(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.SmallIntegerField()
+
+    def __str__(self):
+        return self.user.username

@@ -5,25 +5,49 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from django.contrib.auth.models import User
-from .serializers import ProductSerializer, UserSerializer
-from .models import Product
+from .serializers import ProductSerializer, UserSerializer, CartSerializer
+from .models import Product, Cart
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework import status
 
-# DELETE A PRODUCT
-@api_view(['DELETE'])
-@permission_classes([IsAuthenticated, IsAdminUser])
-def DeleteProduct(request, id):
+""" CART SECTION """
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def ListCartItems(request):
+    user = get_object_or_404(User, username=request.user.username)
+    items = Cart.objects.filter(user=user)
+    serialized_items = CartSerializer(items, many=True)
+    return Response(serialized_items.data)
+
+""" PRODUCT SECTION """
+class ListProducts(generics.ListAPIView):
+    serializer_class = ProductSerializer
+    permission_classes = [IsAuthenticated]
+    queryset = Product.objects.all()
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def ListSingleProduct(request, id):
     try:
-        product = Product.objects.get(id=id)
-        deleted_product = Product.delete(product)
-        return Response({'message': 'product(id:{}) deleted'.format(id)})
+        queryset = Product.objects.select_related('category').get(id=id)
+        serialized = ProductSerializer(queryset)
+        return Response(serialized.data)
     except Product.DoesNotExist:
         return Response({'message': 'product not found'}, status=status.HTTP_404_NOT_FOUND)
-    except Exception as e:
-        return Response({'message': str(e)})
 
-# UPDATE A PRODUCT
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def CreateProduct(request):
+    product = ProductSerializer(data=request.data)
+    validity = product.is_valid()
+    if validity:
+        product.save()
+        return Response({'message': 'success'})
+    return Response({'valid': validity, 'retrieved_data': product.data, 'validated_data': product.validated_data, 'errors': product.errors})
+
+
 '''
 STEPS TO UPDATE THE PRODUCT
 Fetch the product with the requested id
@@ -46,36 +70,21 @@ def UpdateProduct(request, id):
     except Product.DoesNotExist:
         return Response({'message': 'product not found'}, status=status.HTTP_404_NOT_FOUND)
 
-# CREATE A PRODUCT
-@api_view(['POST'])
-@permission_classes([IsAuthenticated, IsAdminUser])
-def CreateProduct(request):
-    product = ProductSerializer(data=request.data)
-    validity = product.is_valid()
-    if validity:
-        product.save()
-        return Response({'message': 'success'})
-    return Response({'valid': validity, 'retrieved_data': product.data, 'validated_data': product.validated_data, 'errors': product.errors})
 
-# LIST SINGLE PRODUCT
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def ListSingleProduct(request, id):
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def DeleteProduct(request, id):
     try:
-        queryset = Product.objects.select_related('category').get(id=id)
-        serialized = ProductSerializer(queryset)
-        return Response(serialized.data)
+        product = Product.objects.get(id=id)
+        deleted_product = Product.delete(product)
+        return Response({'message': 'product(id:{}) deleted'.format(id)})
     except Product.DoesNotExist:
         return Response({'message': 'product not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'message': str(e)})
 
-# LIST ALL PRODUCTS
-class ListProducts(generics.ListAPIView):
-    serializer_class = ProductSerializer
-    permission_classes = [IsAuthenticated]
-    queryset = Product.objects.all()
 
 class UserRegistration(APIView):
-
     def post(self, request):
         username = request.POST.get("username")
         password = request.POST.get("password")
@@ -88,11 +97,13 @@ class UserRegistration(APIView):
             return JsonResponse({"status": "user not registered"}, status=400)
         return JsonResponse({"status": "username, password and email are required"}, status=400)
 
-### ADMIN SECTION ###
+
+""" ADMIN SECTION """
 class ListUsers(generics.ListAPIView):
     permission_classes = [IsAdminUser, IsAuthenticated]
     serializer_class = UserSerializer
     queryset = User.objects.all()
+
 
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated, IsAdminUser])

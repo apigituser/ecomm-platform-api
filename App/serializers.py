@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
-from .models import Product, Category
+from .models import Product, Category, Cart
 
 class CategorySerializer(serializers.ModelSerializer):
 
@@ -34,3 +34,11 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = '__all__'
+
+class CartSerializer(serializers.ModelSerializer):
+    user = serializers.CharField(source='user.username', read_only=True)
+    product = serializers.CharField(source='product.name',  read_only=True)
+
+    class Meta:
+        model = Cart
+        fields = ['user','product','quantity']
