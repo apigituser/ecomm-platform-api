@@ -15,4 +15,6 @@ urlpatterns = [
     path('products/delete/<int:id>', views.DeleteProduct),
     path('cart/', views.ListCartItems),
     path('cart/update/<int:product_id>', views.UpdateCartItemQuantity),
+    path('cart/add/', views.AddCartItem),
+    path('cart/delete/<int:product_id>', views.DeleteCartItem),
 ]

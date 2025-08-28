@@ -22,6 +22,28 @@ def ListCartItems(request):
     return Response(serialized_items.data)
 
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def AddCartItem(request):
+    return Response({'message': 'item added to cart'})
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def DeleteCartItem(request, product_id):
+    try:
+        user = get_object_or_404(User, username=request.user.username)
+        item = Cart.objects.filter(user=user).get(product=product_id)
+        deleted_item = Cart.delete(item)
+
+        if deleted_item: 
+            return Response({'message': 'item deleted from cart'})
+    except Cart.DoesNotExist:
+        return Response({'message': 'product not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'message': e})
+
+
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
 def UpdateCartItemQuantity(request, product_id):
