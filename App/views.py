@@ -1,5 +1,6 @@
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
+from django.utils.ipv6 import is_valid_ipv6_address
 from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
@@ -19,6 +20,22 @@ def ListCartItems(request):
     items = Cart.objects.filter(user=user)
     serialized_items = CartSerializer(items, many=True)
     return Response(serialized_items.data)
+
+
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def UpdateCartItemQuantity(request, product_id):
+    try:
+        user = get_object_or_404(User, username=request.user.username)
+        cart_items = Cart.objects.filter(user=user).get(product=product_id)
+        serialized_cart = CartSerializer(cart_items, data=request.data)
+
+        if serialized_cart.is_valid():
+            serialized_cart.save()
+            return Response(serialized_cart.data)
+        return Response(serialized_cart.errors)
+    except Cart.DoesNotExist:
+        return Response({'message': 'product not found'}, status=status.HTTP_404_NOT_FOUND)
 
 
 """ PRODUCT SECTION """
