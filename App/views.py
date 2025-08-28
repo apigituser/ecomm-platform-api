@@ -25,7 +25,19 @@ def ListCartItems(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def AddCartItem(request):
-    return Response({'message': 'item added to cart'})
+    product_id = request.POST.get('product_id')
+    quantity = request.POST.get('quantity')
+
+    if product_id and quantity:
+        user = get_object_or_404(User, username=request.user.username)
+        product = get_object_or_404(Product, id=product_id)
+        
+        try:
+            Cart.objects.create(user=user, product=product, quantity=quantity)
+            return Response({'message': 'cart item added'}, status=status.HTTP_201_CREATED)
+        except Exception:
+            return Response({'message': 'something went wrong'})
+    return Response({'message': 'product_id and quantity required'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['DELETE'])

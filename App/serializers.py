@@ -37,7 +37,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 class CartSerializer(serializers.ModelSerializer):
     user = serializers.CharField(source='user.username', read_only=True)
-    product = serializers.CharField(source='product.name',  read_only=True)
+    product = serializers.CharField(source='product.name', read_only=True)
 
     class Meta:
         model = Cart
