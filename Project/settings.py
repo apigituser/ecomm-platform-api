@@ -72,7 +72,8 @@ TEMPLATES = [
 WSGI_APPLICATION = 'Project.wsgi.application'
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(hours=3),
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1)
 }
 
 REST_FRAMEWORK = {

@@ -7,8 +7,39 @@ from rest_framework.response import Response
 from django.contrib.auth.models import User
 from .serializers import ProductSerializer, UserSerializer, CartSerializer
 from .models import Product, Cart, Category
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework import status
+
+@csrf_exempt
+def ListCreateCartItem(request):
+    if request.method == "GET":
+        return ListCartItems(request)
+    elif request.method == "POST":
+        return AddCartItem(request)
+
+@csrf_exempt
+def UpdateDeleteCartItem(request, product_id):
+    if request.method == "PATCH":
+        return UpdateCartItemQuantity(request, product_id)
+    elif request.method == "DELETE":
+        return DeleteCartItem(request, product_id)
+
+@csrf_exempt
+def ListCreateProduct(request):
+    if request.method == "GET":
+        return ListProducts(request)
+    elif request.method == "POST":
+        return CreateProduct(request)
+
+@csrf_exempt
+def ListUpdateDeleteProduct(request, id):
+    if request.method == "GET":
+        return ListSingleProduct(request, id)
+    elif request.method == "PATCH":
+        return UpdateProduct(request, id)
+    elif request.method == "DELETE":
+        return DeleteProduct(request, id)
 
 
 """ CART SECTION """
@@ -52,7 +83,7 @@ def DeleteCartItem(request, product_id):
     except Cart.DoesNotExist:
         return Response({'message': 'product not found'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
-        return Response({'message': e})
+        return Response({'message': str(e)})
 
 
 @api_view(['PATCH'])
@@ -72,11 +103,12 @@ def UpdateCartItemQuantity(request, product_id):
 
 
 """ PRODUCT SECTION """
-class ListProducts(generics.ListAPIView):
-    serializer_class = ProductSerializer
-    permission_classes = [IsAuthenticated]
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def ListProducts(request):
     queryset = Product.objects.all()
-
+    products = ProductSerializer(queryset, many=True)
+    return Response(products.data)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -121,6 +153,8 @@ def UpdateProduct(request, id):
         return Response(serialized_product.errors)
     except Product.DoesNotExist:
         return Response({'message': 'product not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'message': str(e)})
 
 
 @api_view(['DELETE'])
@@ -150,13 +184,23 @@ class UserRegistration(APIView):
         return JsonResponse({"status": "username, password and email are required"}, status=400)
 
 
-""" ADMIN SECTION """
+""" USER SECTION"""
 class ListUsers(generics.ListAPIView):
     permission_classes = [IsAdminUser, IsAuthenticated]
     serializer_class = UserSerializer
     queryset = User.objects.all()
 
 
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def DeleteUser(request):
+    username = request.POST.get('username')
+    user = get_object_or_404(User, username=username)
+    User.delete(user)
+    return Response({'message': f'user <{user.username}> deleted'})
+
+
+""" CATEGORY SECTION """
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, IsAdminUser])
 def BulkAddCategory(request):
@@ -168,22 +212,13 @@ def BulkAddCategory(request):
     try:
         Category.objects.bulk_create(categories)
         return Response({'success': 'categories created'})
-    except Exception as e:
-        return Response({'error': str(e)})
+    except Exception:
+        return Response({'message': 'some exception occured'})
 
 
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated, IsAdminUser])
 def DeleteCategory(request, id):
     category = get_object_or_404(Category, id=id)
-    deleted = Category.delete(category)
+    Category.delete(category)
     return Response({'message': f'category<id:{id}> deleted'})
-
-
-@api_view(['DELETE'])
-@permission_classes([IsAuthenticated, IsAdminUser])
-def DeleteUser(request):
-    username = request.POST.get('username')
-    user = get_object_or_404(User, username=username)
-    User.delete(user)
-    return Response({'message': f'user <{user.username}> deleted'})
