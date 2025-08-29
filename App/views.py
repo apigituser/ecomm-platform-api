@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from django.contrib.auth.models import User
 from .serializers import ProductSerializer, UserSerializer, CartSerializer
-from .models import Product, Cart
+from .models import Product, Cart, Category
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework import status
 
@@ -61,8 +61,8 @@ def DeleteCartItem(request, product_id):
 def UpdateCartItemQuantity(request, product_id):
     try:
         user = get_object_or_404(User, username=request.user.username)
-        cart_items = Cart.objects.filter(user=user).get(product=product_id)
-        serialized_cart = CartSerializer(cart_items, data=request.data)
+        cart_item = Cart.objects.filter(user=user).get(product=product_id)
+        serialized_cart = CartSerializer(cart_item, data=request.data)
 
         if serialized_cart.is_valid():
             serialized_cart.save()
@@ -157,6 +157,20 @@ class ListUsers(generics.ListAPIView):
     serializer_class = UserSerializer
     queryset = User.objects.all()
 
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def BulkAddCategory(request):
+    categories = list()
+
+    for elem in request.data:
+        categories.append(Category(id=elem['id'], name=elem['name'], count=elem['count']))
+    
+    try:
+        Category.objects.bulk_create(categories)
+        return Response({'success': 'categories created'})
+    except Exception as e:
+        return Response({'error': str(e)})
 
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated, IsAdminUser])
