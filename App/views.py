@@ -1,6 +1,5 @@
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
-from django.utils.ipv6 import is_valid_ipv6_address
 from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
@@ -171,6 +170,15 @@ def BulkAddCategory(request):
         return Response({'success': 'categories created'})
     except Exception as e:
         return Response({'error': str(e)})
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def DeleteCategory(request, id):
+    category = get_object_or_404(Category, id=id)
+    deleted = Category.delete(category)
+    return Response({'message': f'category<id:{id}> deleted'})
+
 
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated, IsAdminUser])
