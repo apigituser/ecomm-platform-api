@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
-from .models import Product, Category, Cart
+from .models import Product, Category, Cart, Review
 
 class CategorySerializer(serializers.ModelSerializer):
 
@@ -42,3 +42,13 @@ class CartSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cart
         fields = ['user','product','quantity']
+
+class ReviewSerializer(serializers.ModelSerializer):
+    user = serializers.CharField(source="user.username")
+    product = ProductSerializer(read_only=True)
+    created_at = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%S")
+    updated_at = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%S")
+
+    class Meta:
+        model = Review
+        fields = '__all__'

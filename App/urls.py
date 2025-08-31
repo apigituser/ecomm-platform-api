@@ -18,4 +18,6 @@ urlpatterns = [
     
     path('category/', views.BulkAddCategory),
     path('category/<int:id>', views.DeleteCategory),
+
+    path('review/', views.ListReviews),
 ]

@@ -35,7 +35,7 @@ class Order(models.Model):
 class Review(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    rating = models.SmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
+    rating = models.SmallIntegerField(null=True, validators=[MinValueValidator(1), MaxValueValidator(5)])
     review = models.TextField(max_length=1000, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

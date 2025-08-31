@@ -5,8 +5,8 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from django.contrib.auth.models import User
-from .serializers import ProductSerializer, UserSerializer, CartSerializer
-from .models import Product, Cart, Category
+from .serializers import ProductSerializer, UserSerializer, CartSerializer, ReviewSerializer
+from .models import Product, Cart, Category, Review
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework import status
@@ -42,7 +42,7 @@ def ListUpdateDeleteProduct(request, id):
         return DeleteProduct(request, id)
 
 
-""" CART SECTION """
+### CART SECTION ###
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def ListCartItems(request):
@@ -102,7 +102,7 @@ def UpdateCartItemQuantity(request, product_id):
         return Response({'message': 'product not found'}, status=status.HTTP_404_NOT_FOUND)
 
 
-""" PRODUCT SECTION """
+### PRODUCT SECTION ###
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def ListProducts(request):
@@ -184,7 +184,7 @@ class UserRegistration(APIView):
         return JsonResponse({"status": "username, password and email are required"}, status=400)
 
 
-""" USER SECTION"""
+### USER SECTION ###
 class ListUsers(generics.ListAPIView):
     permission_classes = [IsAdminUser, IsAuthenticated]
     serializer_class = UserSerializer
@@ -200,7 +200,7 @@ def DeleteUser(request):
     return Response({'message': f'user <{user.username}> deleted'})
 
 
-""" CATEGORY SECTION """
+### CATEGORY SECTION ###
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, IsAdminUser])
 def BulkAddCategory(request):
@@ -222,3 +222,13 @@ def DeleteCategory(request, id):
     category = get_object_or_404(Category, id=id)
     Category.delete(category)
     return Response({'message': f'category<id:{id}> deleted'})
+
+
+### REVIEW SECTION ###
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def ListReviews(request):
+    queryset = Review.objects.all()
+    reviews = ReviewSerializer(queryset, many=True)
+    return Response(reviews.data)
+
