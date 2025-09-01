@@ -27,8 +27,9 @@ class Order(models.Model):
     units = models.IntegerField()
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
     created_at = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=10, default="Pending") # STATUS (Pending, Delayed, Delivered, Cancelled)
-
+    status = models.CharField(max_length=10, default="Pending")
+    # STATUS (Pending, Delayed, Delivered, Cancelled)
+    
     def __str__(self):
         return self.user.username
 
@@ -36,7 +37,7 @@ class Review(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     rating = models.SmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)], default=0)
-    review = models.TextField(max_length=1000, null=True, blank=True)
+    review = models.TextField(max_length=1000, null=True, blank=True, default="None")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

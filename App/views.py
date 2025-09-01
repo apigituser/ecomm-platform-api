@@ -231,3 +231,18 @@ def ListReviews(request):
     queryset = Review.objects.all()
     reviews = ReviewSerializer(queryset, many=True)
     return Response(reviews.data)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def CreateReview(request, product_id):
+    user = get_object_or_404(User, username=request.user.username)
+    
+    data = request.data.dict()
+    data.update({'user_id': user.id, 'product_id': product_id})
+
+    reviews = ReviewSerializer(data=data)
+
+    if reviews.is_valid():
+        reviews.save()
+        return Response(reviews.data, status=status.HTTP_201_CREATED)
+    return Response(reviews.errors)

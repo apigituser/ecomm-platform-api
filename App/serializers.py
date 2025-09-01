@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
+from django.core.validators import MinValueValidator, MaxValueValidator
 from .models import Product, Category, Cart, Review
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -44,11 +45,15 @@ class CartSerializer(serializers.ModelSerializer):
         fields = ['user','product','quantity']
 
 class ReviewSerializer(serializers.ModelSerializer):
-    user = serializers.CharField(source="user.username")
-    product = ProductSerializer(read_only=True)
-    created_at = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%S")
-    updated_at = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%S")
+    username = serializers.CharField(source="user.username", read_only=True)
+    product_name = serializers.CharField(source="product.name", read_only=True)
+    created_at = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%S", read_only=True)
+    updated_at = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%S", read_only=True)
 
+    rating = serializers.FloatField(write_only=True, validators=[MinValueValidator(1), MaxValueValidator(5)])
+    user_id = serializers.IntegerField(write_only=True)
+    product_id = serializers.IntegerField(write_only=True)
+    
     class Meta:
         model = Review
-        fields = '__all__'
+        fields = ['user_id','product_id','rating','review', 'username','product_name','created_at','updated_at']

@@ -20,4 +20,5 @@ urlpatterns = [
     path('category/<int:id>', views.DeleteCategory),
 
     path('review/', views.ListReviews),
+    path('review/<int:product_id>', views.CreateReview),
 ]
