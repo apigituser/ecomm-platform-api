@@ -231,4 +231,3 @@ def ListReviews(request):
     queryset = Review.objects.all()
     reviews = ReviewSerializer(queryset, many=True)
     return Response(reviews.data)
-
