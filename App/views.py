@@ -5,8 +5,8 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from django.contrib.auth.models import User
-from .serializers import ProductSerializer, UserSerializer, CartSerializer, ReviewSerializer
-from .models import Product, Cart, Category, Review
+from .serializers import ProductSerializer, UserSerializer, CartSerializer, ReviewSerializer, OrderSerializer
+from .models import Product, Cart, Category, Review, Order
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework import status
@@ -246,3 +246,13 @@ def CreateReview(request, product_id):
         reviews.save()
         return Response(reviews.data, status=status.HTTP_201_CREATED)
     return Response(reviews.errors)
+
+
+### ORDER SECTION ###
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def ListOrders(request):
+    user_id = get_object_or_404(User, id=request.user.id)
+    orders = Order.objects.filter(user_id=user_id)
+    queryset = OrderSerializer(orders, many=True)
+    return Response(queryset.data)

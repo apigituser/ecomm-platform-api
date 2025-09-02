@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
-from .models import Product, Category, Cart, Review
+from .models import Product, Category, Cart, Review, Order
 
 class CategorySerializer(serializers.ModelSerializer):
 
@@ -57,3 +57,12 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = ['user_id','product_id','rating','review', 'username','product_name','created_at','updated_at']
+    
+class OrderSerializer(serializers.ModelSerializer):
+    product = ProductSerializer(read_only=True)
+    total_amount = serializers.FloatField()
+    units = serializers.IntegerField()
+
+    class Meta:
+        model = Order
+        fields = ['product','units','total_amount','created_at']
