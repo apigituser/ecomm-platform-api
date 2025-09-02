@@ -256,3 +256,24 @@ def ListOrders(request):
     orders = Order.objects.filter(user_id=user_id)
     queryset = OrderSerializer(orders, many=True)
     return Response(queryset.data)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def CreateOrder(request, product_id):
+    user = get_object_or_404(User, id=request.user.id)
+    product = get_object_or_404(Product, id=product_id)
+    units = request.POST.get('units')
+
+    if units:
+        total_amount = product.price * int(units)
+        data = request.data.dict()
+        data.update({'user_id': user.id, 'product_id': product.id, 'units': int(units), 'total_amount': total_amount})
+
+        order = OrderSerializer(data=data)
+        
+        if order.is_valid():
+            order.save()
+            return Response({'message': 'order placed successfully!'})
+        return Response(order.errors)
+    return Response({'message': 'units required'}, status=status.HTTP_400_BAD_REQUEST)

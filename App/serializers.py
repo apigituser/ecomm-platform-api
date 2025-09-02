@@ -60,9 +60,13 @@ class ReviewSerializer(serializers.ModelSerializer):
     
 class OrderSerializer(serializers.ModelSerializer):
     product = ProductSerializer(read_only=True)
+    username = serializers.CharField(source='user.username', read_only=True)
     total_amount = serializers.FloatField()
     units = serializers.IntegerField()
 
+    user_id = serializers.IntegerField(write_only=True)
+    product_id = serializers.IntegerField(write_only=True)
+
     class Meta:
         model = Order
-        fields = ['product','units','total_amount','created_at']
+        fields = ['user_id','product_id','username','product','units','total_amount','status','created_at']
