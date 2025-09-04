@@ -147,14 +147,9 @@ def UpdateProduct(request, id):
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated, IsAdminUser])
 def DeleteProduct(request, id):
-    try:
-        product = Product.objects.get(id=id)
-        deleted_product = Product.delete(product)
-        return Response({'message': 'product(id:{}) deleted'.format(id)})
-    except Product.DoesNotExist:
-        return Response({'message': 'product not found'}, status=status.HTTP_404_NOT_FOUND)
-    except Exception as e:
-        return Response({'message': str(e)})
+    product = get_object_or_404(Product, id=id)
+    deleted = product.delete()
+    return Response({'message': f'product <id:{id}> deleted'}, status=status.HTTP_204_NO_CONTENT)
 
 
 class UserRegistration(APIView):
