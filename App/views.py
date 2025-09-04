@@ -125,36 +125,23 @@ def ListSingleProduct(request, id):
 @permission_classes([IsAuthenticated, IsAdminUser])
 def CreateProduct(request):
     product = ProductSerializer(data=request.data)
-    
+
     if product.is_valid():
         product.save()
         return Response(product.data)
     return Response(product.errors)
 
 
-'''
-STEPS TO UPDATE THE PRODUCT
-Fetch the product with the requested id
-Serialize the received the product using the ProductSerializer
-    :parameters -> the product object received, date in the request, partial=True (partial data allowed)
-Check if the serialized product is valid:
-    if valid -> save the product
-    else -> return an error response
-'''
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated, IsAdminUser])
 def UpdateProduct(request, id):
-    try:
-        product = Product.objects.get(id=id)
-        serialized_product = ProductSerializer(product, data=request.data, partial=True)
-        if serialized_product.is_valid():
-            updated_product = serialized_product.save()
-            return Response(serialized_product.data)
-        return Response(serialized_product.errors)
-    except Product.DoesNotExist:
-        return Response({'message': 'product not found'}, status=status.HTTP_404_NOT_FOUND)
-    except Exception as e:
-        return Response({'message': str(e)})
+    product = get_object_or_404(Product, id=id)
+    serializer = ProductSerializer(instance=product, data=request.data, partial=True)
+
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors)
 
 
 @api_view(['DELETE'])
