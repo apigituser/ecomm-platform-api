@@ -113,12 +113,9 @@ def ListProducts(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def ListSingleProduct(request, id):
-    try:
-        queryset = Product.objects.select_related('category').get(id=id)
-        serialized = ProductSerializer(queryset)
-        return Response(serialized.data)
-    except Product.DoesNotExist:
-        return Response({'message': 'product not found'}, status=status.HTTP_404_NOT_FOUND)
+    product = get_object_or_404(Product, id=id)
+    serializer = ProductSerializer(product)
+    return Response(serializer.data)
 
 
 @api_view(['POST'])
