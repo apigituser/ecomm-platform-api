@@ -43,6 +43,15 @@ def ListUpdateDeleteProduct(request, id):
     elif request.method == "DELETE":
         return DeleteProduct(request, id)
 
+@csrf_exempt
+def ListCreateDeleteUsers(request):
+    if request.method == 'GET':
+        return ListUsers(request)
+    elif request.method == 'POST':
+        return UserRegistration(request)
+    elif request.method == 'DELETE':
+        return DeleteUser(request)
+
 
 ### CART SECTION ###
 @api_view(['GET'])
@@ -151,6 +160,7 @@ def DeleteProduct(request, id):
     return Response({'message': f'product <id:{id}> deleted'}, status=status.HTTP_204_NO_CONTENT)
 
 
+### USER SECTION ###
 @api_view(['POST'])
 def UserRegistration(request):
     username = request.data.get("username")
@@ -170,20 +180,21 @@ def UserRegistration(request):
     return Response({'message': 'username, password and email are required'}, status=status.HTTP_400_BAD_REQUEST)
 
 
-### USER SECTION ###
-class ListUsers(generics.ListAPIView):
-    permission_classes = [IsAdminUser, IsAuthenticated]
-    serializer_class = UserSerializer
-    queryset = User.objects.all()
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def ListUsers(request):
+    users = User.objects.all()
+    serializer = UserSerializer(users, many=True)
+    return Response(serializer.data)
 
 
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated, IsAdminUser])
 def DeleteUser(request):
-    username = request.POST.get('username')
+    username = request.data.get('username')
     user = get_object_or_404(User, username=username)
-    User.delete(user)
-    return Response({'message': f'user <{user.username}> deleted'})
+    user.delete()
+    return Response({'message': f'user <{username}> deleted'})
 
 
 ### CATEGORY SECTION ###
