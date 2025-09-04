@@ -8,27 +8,21 @@ class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Category
-        fields = ['id','name','count']
+        fields = ['id','name']
 
 class ProductSerializer(serializers.ModelSerializer):
     price = serializers.FloatField()
-    rating = serializers.FloatField()
-    
-    category_name = serializers.CharField(source="category.name", read_only=True)
-    category_id = serializers.IntegerField(source="category.id", write_only=True)
+    rating = serializers.FloatField(validators=[MinValueValidator(0.0), MaxValueValidator(5.0)], default=0.0)
+    category = serializers.CharField(source='category.name', read_only=True)
+    category_id = serializers.PrimaryKeyRelatedField(
+        queryset=Category.objects.all(),
+        source='category',
+        write_only=True)
 
     class Meta:
         model = Product
-        fields = ['id','name','description','category_id','category_name','brand','price','rating','stock']
+        fields = ['id','name','description','category','category_id','brand','price','rating','stock']
 
-    def create(self, validated_data):
-        category_id = validated_data.pop('category').get('id')
-        item = get_object_or_404(Category, id=category_id)
-        item.count += 1
-        item.save()
-        validated_data['category'] = item
-        product = Product.objects.create(**validated_data)
-        return product
 
 class UserSerializer(serializers.ModelSerializer):
 

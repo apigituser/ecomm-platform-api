@@ -125,11 +125,11 @@ def ListSingleProduct(request, id):
 @permission_classes([IsAuthenticated, IsAdminUser])
 def CreateProduct(request):
     product = ProductSerializer(data=request.data)
-    validity = product.is_valid()
-    if validity:
+    
+    if product.is_valid():
         product.save()
-        return Response({'message': 'success'})
-    return Response({'valid': validity, 'retrieved_data': product.data, 'validated_data': product.validated_data, 'errors': product.errors})
+        return Response(product.data)
+    return Response(product.errors)
 
 
 '''
