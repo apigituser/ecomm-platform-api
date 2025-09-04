@@ -5,6 +5,8 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from django.contrib.auth.models import User
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
 from .serializers import ProductSerializer, UserSerializer, CartSerializer, ReviewSerializer, OrderSerializer
 from .models import Product, Cart, Category, Review, Order
 from django.views.decorators.csrf import csrf_exempt
@@ -149,18 +151,23 @@ def DeleteProduct(request, id):
     return Response({'message': f'product <id:{id}> deleted'}, status=status.HTTP_204_NO_CONTENT)
 
 
-class UserRegistration(APIView):
-    def post(self, request):
-        username = request.POST.get("username")
-        password = request.POST.get("password")
-        email = request.POST.get("email")
+@api_view(['POST'])
+def UserRegistration(request):
+    username = request.data.get("username")
+    password = request.data.get("password")
+    email = request.data.get("email")
 
-        if username and password and email:
+    if username and password and email:
+        if User.objects.filter(username=username).exists():
+            return Response({'message': 'username already exists'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            validate_email(email)
             user = User.objects.create_user(username, email, password)
             if user is not None:
-                return JsonResponse({"status": "registeration successful"})
-            return JsonResponse({"status": "user not registered"}, status=400)
-        return JsonResponse({"status": "username, password and email are required"}, status=400)
+                return Response({'message': 'registeration successful'}, status=status.HTTP_201_CREATED)
+        except ValidationError:
+            return Response({'message': 'enter a valid email address'}, status=status.HTTP_400_BAD_REQUEST)
+    return Response({'message': 'username, password and email are required'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 ### USER SECTION ###
