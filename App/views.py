@@ -7,11 +7,16 @@ from rest_framework.response import Response
 from django.contrib.auth.models import User
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
-from .serializers import ProductSerializer, UserSerializer, CartSerializer, ReviewSerializer, OrderSerializer
+from .serializers import ProductSerializer, UserSerializer, CartSerializer, ReviewSerializer, OrderSerializer, CategorySerializer
 from .models import Product, Cart, Category, Review, Order
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework import status
+
+"""
+    NOTE:
+    Use classes to avoid writing these handlers
+"""
 
 @csrf_exempt
 def ListCreateCartItem(request):
@@ -51,6 +56,13 @@ def ListCreateDeleteUsers(request):
         return UserRegistration(request)
     elif request.method == 'DELETE':
         return DeleteUser(request)
+
+@csrf_exempt
+def ListCreateCategory(request):
+    if request.method == 'GET':
+        return ListCategories(request)
+    elif request.method == 'POST':
+        return CreateCategory(request)
 
 
 ### CART SECTION ###
@@ -202,24 +214,28 @@ def DeleteUser(request):
 ### CATEGORY SECTION ###
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, IsAdminUser])
-def BulkAddCategory(request):
-    categories = list()
+def ListCategories(request):
+    queryset = Category.objects.all()
+    serializer = CategorySerializer(queryset, many=True)
+    return Response(serializer.data)
 
-    for elem in request.data:
-        categories.append(Category(id=elem['id'], name=elem['name'], count=elem['count']))
-    
-    try:
-        Category.objects.bulk_create(categories)
-        return Response({'success': 'categories created'})
-    except Exception:
-        return Response({'message': 'some exception occured'})
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def CreateCategory(request):
+    serializer = CategorySerializer(data=request.data)
+
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors)
 
 
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated, IsAdminUser])
 def DeleteCategory(request, id):
     category = get_object_or_404(Category, id=id)
-    Category.delete(category)
+    category.delete()
     return Response({'message': f'category<id:{id}> deleted'})
 
 

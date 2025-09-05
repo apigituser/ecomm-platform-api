@@ -15,7 +15,7 @@ urlpatterns = [
     path('cart/', views.ListCreateCartItem),
     path('cart/<int:product_id>', views.UpdateDeleteCartItem),
     
-    path('category/', views.BulkAddCategory),
+    path('category/', views.ListCreateCategory),
     path('category/<int:id>', views.DeleteCategory),
 
     path('review/', views.ListReviews),
