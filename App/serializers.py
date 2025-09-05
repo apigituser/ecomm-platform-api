@@ -44,13 +44,13 @@ class ReviewSerializer(serializers.ModelSerializer):
     created_at = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%S", read_only=True)
     updated_at = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%S", read_only=True)
 
-    rating = serializers.FloatField(write_only=True, validators=[MinValueValidator(1), MaxValueValidator(5)])
+    rating = serializers.FloatField(validators=[MinValueValidator(1), MaxValueValidator(5)])
     user_id = serializers.IntegerField(write_only=True)
     product_id = serializers.IntegerField(write_only=True)
     
     class Meta:
         model = Review
-        fields = ['user_id','product_id','rating','review', 'username','product_name','created_at','updated_at']
+        fields = ['user_id','product_id','username','product_name','rating','review','created_at','updated_at']
     
 class OrderSerializer(serializers.ModelSerializer):
     product = ProductSerializer(read_only=True)
