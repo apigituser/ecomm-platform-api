@@ -168,6 +168,8 @@ def UserRegistration(request):
     email = request.data.get("email")
 
     if username and password and email:
+        if len(password) < 8:
+            return Response({'message': 'password is too short'}, status=status.HTTP_400_BAD_REQUEST)
         if User.objects.filter(username=username).exists():
             return Response({'message': 'username already exists'}, status=status.HTTP_400_BAD_REQUEST)
         try:
